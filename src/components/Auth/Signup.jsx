@@ -64,7 +64,7 @@ function Signup() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100 px-4 sm:px-6 lg:px-8">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100 px-4 sm:px-6 lg:px-8 mt-12">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border-t-4 border-purple-500 mx-auto my-8">
         <h2 className="text-3xl font-extrabold text-center text-purple-700 mb-6">
           Sign Up

@@ -52,3 +52,28 @@ export const fetchGetAllJobs = async () => {
     };
   }
 };
+
+export const fetchGetJobById = async (jobId) => {
+  try {
+    const response = await fetch(`${baseUrl}/jobs/job/${jobId}`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      return { success: true, data: result };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Failed to fetch job details",
+      };
+    }
+  } catch (e) {
+    console.error("Error fetching job by ID:", e);
+    return {
+      success: false,
+      message: "Network error. Please try again later.",
+    };
+  }
+};

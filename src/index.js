@@ -9,6 +9,8 @@ import store from "./store/store";
 import SignupPage from "./pages/SignupPage";
 import LoginPage from "./pages/LoginPage";
 import PostJob from "./components/Jobs/PostJob";
+import Home from "./components/Home";
+import JobDetailsPage from "./pages/JobDetailsPage";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -16,18 +18,28 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-  },
-  {
-    path: "/signup",
-    element: <SignupPage />,
-  },
-  {
-    path: "/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/postjob",
-    element: <PostJob />,
+    children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
+      {
+        path: "/job/:id",
+        element: <JobDetailsPage />,
+      },
+      {
+        path: "/signup",
+        element: <SignupPage />,
+      },
+      {
+        path: "/login",
+        element: <LoginPage />,
+      },
+      {
+        path: "/postjob",
+        element: <PostJob />,
+      },
+    ],
   },
 ]);
 

@@ -18,11 +18,16 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-gradient-to-r from-indigo-600 to-teal-500 shadow-md">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-indigo-600 to-teal-500 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="text-2xl font-bold text-white">JobIntelPro</div>
+          <div
+            className="text-2xl font-bold text-white cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            JobIntelPro
+          </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex gap-6 text-white">
@@ -94,30 +99,35 @@ export default function Navbar() {
           <Link
             className="block text-white hover:text-yellow-300 transition"
             to="/countries"
+            onClick={() => setIsOpen(false)}
           >
             Jobs by Countries
           </Link>
           <Link
             className="block text-white hover:text-yellow-300 transition"
             to="/cities"
+            onClick={() => setIsOpen(false)}
           >
             Jobs by Cities
           </Link>
           <Link
             className="block text-white hover:text-yellow-300 transition"
             to="/batch"
+            onClick={() => setIsOpen(false)}
           >
             Batch
           </Link>
           <Link
             className="block text-white hover:text-yellow-300 transition"
             to="/degree"
+            onClick={() => setIsOpen(false)}
           >
             Degree
           </Link>
           <Link
             className="block text-white hover:text-yellow-300 transition"
             to="/internships"
+            onClick={() => setIsOpen(false)}
           >
             Internships
           </Link>
@@ -126,7 +136,10 @@ export default function Navbar() {
           <div className="flex gap-3 mt-2 flex-col">
             {user ? (
               <button
-                onClick={handleLogout}
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
                 className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
               >
                 Logout
@@ -134,13 +147,19 @@ export default function Navbar() {
             ) : (
               <>
                 <button
-                  onClick={() => navigate("/login")}
+                  onClick={() => {
+                    navigate("/login");
+                    setIsOpen(false);
+                  }}
                   className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
                 >
                   Login
                 </button>
                 <button
-                  onClick={() => navigate("/signup")}
+                  onClick={() => {
+                    navigate("/signup");
+                    setIsOpen(false);
+                  }}
                   className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
                 >
                   Signup

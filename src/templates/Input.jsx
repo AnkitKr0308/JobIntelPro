@@ -7,7 +7,7 @@ function Input({ fields = [], onChange, formData, ...props }) {
         <div key={field.id} className="flex flex-col">
           <label
             htmlFor={field.id}
-            className="mb-3 text-gray-700 font-semibold"
+            className="mb-3 text-gray-700 font-semibold text-left"
           >
             {field.label}{" "}
             {field.required && <span className="text-red-500">*</span>}
