@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { GetAllJobs } from "../store/jobSlice";
+import { getAllJobs } from "../store/jobSlice";
 import JobList from "../components/Jobs/JobList";
 import AdCard from "../templates/AdCard";
 
@@ -9,7 +9,7 @@ export default function Home() {
   const { jobs } = useSelector((state) => state.job);
 
   useEffect(() => {
-    dispatch(GetAllJobs());
+    dispatch(getAllJobs());
   }, [dispatch]);
 
   return (

@@ -1,8 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { GetAllJobs, filterJobs } from "../store/jobSlice";
+import {
+  GetCities,
+  GetCountries,
+  // filterJobs,
+  getAllJobs,
+  searchJobs,
+  setFilters,
+} from "../store/jobSlice";
 import { logoutUser } from "../store/authSlice";
+// import { fetchSearchJobs } from "../api/jobsAPI";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -11,6 +19,7 @@ export default function Navbar() {
   const { user } = useSelector((state) => state.auth);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const [selectedCountries, setSelectedCountries] = useState([]);
   const [selectedCities, setSelectedCities] = useState([]);
 
@@ -20,27 +29,56 @@ export default function Navbar() {
   const countryRef = useRef(null);
   const cityRef = useRef(null);
 
-  // fetch all jobs initially
   useEffect(() => {
-    dispatch(GetAllJobs());
+    dispatch(GetCountries());
+    // dispatch(GetCities());
   }, [dispatch]);
 
-  // filter jobs when filters change
+  useEffect(() => {
+    if (selectedCountries.length > 0) {
+      dispatch(GetCities(selectedCountries));
+    } else {
+      dispatch(GetCities([]));
+      setSelectedCities([]);
+    }
+  }, [selectedCountries, dispatch]);
+
+  useEffect(() => {
+    if (
+      searchValue.trim() === "" &&
+      selectedCountries.length === 0 &&
+      selectedCities.length === 0
+    ) {
+      dispatch(getAllJobs());
+    } else {
+      dispatch(
+        searchJobs({
+          query: searchValue,
+          countries: selectedCountries,
+          cities: selectedCities,
+        })
+      );
+    }
+  }, [searchValue, selectedCountries, selectedCities, dispatch]);
+
   useEffect(() => {
     dispatch(
-      filterJobs({ countries: selectedCountries, cities: selectedCities })
+      setFilters({
+        countries: selectedCountries,
+        cities: selectedCities,
+        search: searchValue,
+      })
     );
-  }, [selectedCountries, selectedCities, dispatch]);
+  }, [selectedCountries, selectedCities, searchValue, dispatch]);
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (isOpen) return; // don't close in mobile menu
+      if (isOpen) return;
       if (
         countryRef.current?.contains(e.target) ||
         cityRef.current?.contains(e.target)
-      ) {
+      )
         return;
-      }
       setCountryDropdownOpen(false);
       setCityDropdownOpen(false);
     }
@@ -74,14 +112,26 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6">
-            {/* Country Filter */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* Search Bar */}
+            <input
+              type="text"
+              placeholder="Search jobs..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+            />
+
+            {/* Job Roles / Countries Dropdown */}
             <div className="relative" ref={countryRef}>
               <button
-                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                onClick={() => {
+                  setCountryDropdownOpen(!countryDropdownOpen);
+                  if (!countryDropdownOpen) setCityDropdownOpen(false); // close city dropdown
+                }}
                 className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
               >
-                🌍 Jobs by Countries
+                Jobs by Countries
               </button>
               {countryDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
@@ -116,13 +166,16 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* City Filter */}
+            {/* City Filter Dropdown */}
             <div className="relative" ref={cityRef}>
               <button
-                onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                onClick={() => {
+                  setCityDropdownOpen(!cityDropdownOpen);
+                  if (!cityDropdownOpen) setCountryDropdownOpen(false); // close country dropdown
+                }}
                 className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
               >
-                🏙️ Jobs by Cities
+                Jobs by Cities
               </button>
               {cityDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
@@ -210,127 +263,6 @@ export default function Navbar() {
           </div>
         </div>
       </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden bg-indigo-700 px-4 py-3 space-y-3">
-          {/* Filters */}
-          <div>
-            {/* Countries */}
-            <button
-              onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-              className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mb-2"
-            >
-              🌍 Jobs by Countries
-            </button>
-            {countryDropdownOpen && (
-              <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
-                {selectedCountries.length > 0 && (
-                  <button
-                    onClick={() => setSelectedCountries([])}
-                    className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
-                  >
-                    Clear All
-                  </button>
-                )}
-                {countries.map((country, idx) => (
-                  <label
-                    key={`${country}-${idx}`}
-                    className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCountries.includes(country)}
-                      onChange={() =>
-                        toggleSelection(
-                          country,
-                          selectedCountries,
-                          setSelectedCountries
-                        )
-                      }
-                    />
-                    <span>{country}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-
-            {/* Cities */}
-            <button
-              onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
-              className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mt-2"
-            >
-              🏙️ Jobs by Cities
-            </button>
-            {cityDropdownOpen && (
-              <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
-                {selectedCities.length > 0 && (
-                  <button
-                    onClick={() => setSelectedCities([])}
-                    className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
-                  >
-                    Clear All
-                  </button>
-                )}
-                {cities.map((city, idx) => (
-                  <label
-                    key={`${city}-${idx}`}
-                    className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedCities.includes(city)}
-                      onChange={() =>
-                        toggleSelection(city, selectedCities, setSelectedCities)
-                      }
-                    />
-                    <span>{city}</span>
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Links */}
-          <Link className="block text-white hover:text-yellow-300" to="/batch">
-            Batch
-          </Link>
-          <Link className="block text-white hover:text-yellow-300" to="/degree">
-            Degree
-          </Link>
-          <Link
-            className="block text-white hover:text-yellow-300"
-            to="/internships"
-          >
-            Internships
-          </Link>
-
-          {/* Auth */}
-          {user ? (
-            <button
-              onClick={handleLogout}
-              className="w-full px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600"
-            >
-              Logout
-            </button>
-          ) : (
-            <>
-              <button
-                onClick={() => navigate("/login")}
-                className="w-full px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600"
-              >
-                Login
-              </button>
-              <button
-                onClick={() => navigate("/signup")}
-                className="w-full px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600"
-              >
-                Signup
-              </button>
-            </>
-          )}
-        </div>
-      )}
     </nav>
   );
 }

@@ -3,6 +3,7 @@ import { getAuthHeaders } from "./authAPI.js";
 
 const baseUrl = conf.jobintelpro_base_url;
 
+// ✅ Create job
 export const fetchCreateJob = async (jobData) => {
   try {
     const response = await fetch(`${baseUrl}/jobs/createjob`, {
@@ -28,6 +29,7 @@ export const fetchCreateJob = async (jobData) => {
   }
 };
 
+// ✅ Get all jobs
 export const fetchGetAllJobs = async () => {
   try {
     const response = await fetch(`${baseUrl}/jobs/alljobs`, {
@@ -37,7 +39,7 @@ export const fetchGetAllJobs = async () => {
     const result = await response.json();
 
     if (response.ok) {
-      return { success: true, jobs: result.jobs }; // ✅ flatten
+      return { success: true, jobs: result.jobs };
     } else {
       return {
         success: false,
@@ -53,6 +55,7 @@ export const fetchGetAllJobs = async () => {
   }
 };
 
+// ✅ Get job by ID
 export const fetchGetJobById = async (jobId) => {
   try {
     const response = await fetch(`${baseUrl}/jobs/job/${jobId}`, {
@@ -78,6 +81,7 @@ export const fetchGetJobById = async (jobId) => {
   }
 };
 
+// ✅ Get countries
 export const fetchCountries = async () => {
   try {
     const response = await fetch(`${baseUrl}/jobs/countries`, {
@@ -87,7 +91,7 @@ export const fetchCountries = async () => {
     const result = await response.json();
 
     if (response.ok) {
-      return { success: true, data: result };
+      return { success: true, countries: result.countries || [] };
     } else {
       return {
         success: false,
@@ -103,16 +107,26 @@ export const fetchCountries = async () => {
   }
 };
 
-export const fetchCities = async () => {
+export const fetchCities = async (countries = []) => {
   try {
-    const response = await fetch(`${baseUrl}/jobs/cities`, {
+    let url = `${baseUrl}/jobs/cities`;
+
+    if (countries.length > 0) {
+      const query = countries
+        .map((c) => `countries=${encodeURIComponent(c)}`)
+        .join("&");
+      url += `?${query}`;
+    }
+
+    const response = await fetch(url, {
       method: "GET",
       headers: getAuthHeaders(),
     });
+
     const result = await response.json();
 
     if (response.ok) {
-      return { success: true, data: result };
+      return { success: true, cities: result.cities || [] };
     } else {
       return {
         success: false,
@@ -121,6 +135,44 @@ export const fetchCities = async () => {
     }
   } catch (e) {
     console.error("Error fetching cities:", e);
+    return {
+      success: false,
+      message: "Network error. Please try again later.",
+    };
+  }
+};
+
+export const fetchSearchJobs = async ({
+  query = "",
+  countries = [],
+  cities = [],
+}) => {
+  try {
+    const params = new URLSearchParams();
+    if (query) params.append("query", query);
+    if (countries.length > 0) params.append("countries", countries.join(","));
+    if (cities.length > 0) params.append("cities", cities.join(","));
+
+    const response = await fetch(
+      `${baseUrl}/jobs/searchjobs?${params.toString()}`,
+      {
+        method: "GET",
+        headers: getAuthHeaders(),
+      }
+    );
+
+    const result = await response.json();
+
+    if (response.ok) {
+      return { success: true, jobs: result.jobs || [] };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Job search failed",
+      };
+    }
+  } catch (e) {
+    console.error("Error searching jobs:", e);
     return {
       success: false,
       message: "Network error. Please try again later.",

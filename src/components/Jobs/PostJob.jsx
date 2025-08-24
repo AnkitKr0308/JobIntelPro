@@ -57,10 +57,11 @@ function PostJob() {
     } else {
       setError(result.payload?.message || "Error posting job");
     }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100 flex items-center justify-center px-4 py-12 mt-[9vh]">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow-2xl p-10 border-t-4 border-purple-500">
         <h2 className="text-3xl font-extrabold text-center text-purple-700 mb-8">
           Post a Job
