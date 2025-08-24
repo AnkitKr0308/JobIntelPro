@@ -46,10 +46,7 @@ export default function Navbar() {
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleLogout = () => {
@@ -82,13 +79,20 @@ export default function Navbar() {
             <div className="relative" ref={countryRef}>
               <button
                 onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
-                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm 
-                           focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
+                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
               >
                 🌍 Jobs by Countries
               </button>
               {countryDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
+                  {selectedCountries.length > 0 && (
+                    <button
+                      onClick={() => setSelectedCountries([])}
+                      className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
+                    >
+                      Clear All
+                    </button>
+                  )}
                   {countries.map((country, idx) => (
                     <label
                       key={`${country}-${idx}`}
@@ -116,13 +120,20 @@ export default function Navbar() {
             <div className="relative" ref={cityRef}>
               <button
                 onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
-                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm 
-                           focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
+                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
               >
                 🏙️ Jobs by Cities
               </button>
               {cityDropdownOpen && (
                 <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
+                  {selectedCities.length > 0 && (
+                    <button
+                      onClick={() => setSelectedCities([])}
+                      className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
+                    >
+                      Clear All
+                    </button>
+                  )}
                   {cities.map((city, idx) => (
                     <label
                       key={`${city}-${idx}`}
@@ -200,11 +211,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ✅ Mobile Menu */}
+      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden bg-indigo-700 px-4 py-3 space-y-3">
           {/* Filters */}
           <div>
+            {/* Countries */}
             <button
               onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
               className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mb-2"
@@ -213,6 +225,14 @@ export default function Navbar() {
             </button>
             {countryDropdownOpen && (
               <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
+                {selectedCountries.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCountries([])}
+                    className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
+                  >
+                    Clear All
+                  </button>
+                )}
                 {countries.map((country, idx) => (
                   <label
                     key={`${country}-${idx}`}
@@ -235,6 +255,7 @@ export default function Navbar() {
               </div>
             )}
 
+            {/* Cities */}
             <button
               onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
               className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mt-2"
@@ -243,6 +264,14 @@ export default function Navbar() {
             </button>
             {cityDropdownOpen && (
               <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
+                {selectedCities.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCities([])}
+                    className="w-full text-left px-2 py-1 mb-2 text-red-500 hover:bg-gray-100 rounded"
+                  >
+                    Clear All
+                  </button>
+                )}
                 {cities.map((city, idx) => (
                   <label
                     key={`${city}-${idx}`}

@@ -8,10 +8,8 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 👇 Pull the filtered jobs directly from Redux
+  // Pull the filtered jobs directly from Redux
   const jobs = useSelector((state) => state.job.filteredJobs);
-
-  // If no filters applied, fall back to all jobs
   const allJobs = useSelector((state) => state.job.jobs);
   const jobsToRender = jobs.length > 0 ? jobs : allJobs;
 
@@ -39,9 +37,10 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
       />
     );
 
+    // Insert Ad after every 6 jobs
     if ((idx + 1) % 6 === 0) {
       jobsWithAd.push(
-        <div key={`ad-${job.id}-${idx}`} className="col-span-3 w-full">
+        <div key={`ad-${job.id}-${idx}`} className="col-span-1 w-full">
           <AdCard
             size="banner"
             className="w-full h-40 rounded-2xl shadow-md bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-center"
@@ -54,7 +53,7 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
   return (
     <div>
       {/* ===== Jobs Grid ===== */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[minmax(0,1fr)]">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[minmax(0,1fr)]">
         {jobsWithAd}
       </div>
 
@@ -90,6 +89,14 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
           </button>
         </div>
       )}
+
+      {/* ===== Bottom Banner Ad Above Footer ===== */}
+      <div className="mt-12">
+        <AdCard
+          size="banner"
+          className="w-full h-40 rounded-2xl shadow-md bg-gradient-to-r from-indigo-600 to-teal-500 text-white flex items-center justify-center"
+        />
+      </div>
     </div>
   );
 }

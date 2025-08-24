@@ -44,19 +44,26 @@ function JobDetails() {
             <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-10">
               {currentJob ? currentJob.title : "No Jobs Found"}
             </h1>
+            {currentJob.company && (
+              <p className="text-center mt-1 mb-8">
+                <span className="text-xl sm:text-3xl font-semibold text-white-900 font-serif">
+                  {currentJob.company}
+                </span>
+              </p>
+            )}
 
             {currentJob ? (
               <div className="bg-white text-gray-800 rounded-3xl p-8 sm:p-10 shadow-lg text-left">
                 {/* Job Details */}
                 <div className="space-y-4">
-                  {currentJob.company && (
+                  {/* {currentJob.company && (
                     <p>
                       <span className="font-bold text-indigo-700">
                         Company:
                       </span>{" "}
                       {currentJob.company}
                     </p>
-                  )}
+                  )} */}
                   {(currentJob.city || currentJob.country) && (
                     <p>
                       <span className="font-bold text-indigo-700">
