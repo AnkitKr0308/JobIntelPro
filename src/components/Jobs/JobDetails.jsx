@@ -88,6 +88,7 @@ function JobDetails() {
                       {currentJob.description}
                     </p>
                   )}
+
                   {currentJob.experience && (
                     <p>
                       <span className="font-bold text-indigo-700">
@@ -96,6 +97,12 @@ function JobDetails() {
                       {currentJob.experience}
                     </p>
                   )}
+                  <div className="my-8">
+                    <AdCard
+                      size="banner"
+                      className="w-full h-40 rounded-2xl shadow-md bg-gradient-to-r from-purple-500 to-indigo-500 text-white flex items-center justify-center"
+                    />
+                  </div>
                   {currentJob.degree && (
                     <p>
                       <span className="font-bold text-indigo-700">
