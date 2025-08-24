@@ -37,7 +37,7 @@ export const fetchGetAllJobs = async () => {
     const result = await response.json();
 
     if (response.ok) {
-      return { success: true, data: result };
+      return { success: true, jobs: result.jobs }; // ✅ flatten
     } else {
       return {
         success: false,
@@ -71,6 +71,56 @@ export const fetchGetJobById = async (jobId) => {
     }
   } catch (e) {
     console.error("Error fetching job by ID:", e);
+    return {
+      success: false,
+      message: "Network error. Please try again later.",
+    };
+  }
+};
+
+export const fetchCountries = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/jobs/countries`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      return { success: true, data: result };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Failed to fetch countries",
+      };
+    }
+  } catch (e) {
+    console.error("Error fetching countries:", e);
+    return {
+      success: false,
+      message: "Network error. Please try again later.",
+    };
+  }
+};
+
+export const fetchCities = async () => {
+  try {
+    const response = await fetch(`${baseUrl}/jobs/cities`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      return { success: true, data: result };
+    } else {
+      return {
+        success: false,
+        message: result.message || "Failed to fetch cities",
+      };
+    }
+  } catch (e) {
+    console.error("Error fetching cities:", e);
     return {
       success: false,
       message: "Network error. Please try again later.",

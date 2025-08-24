@@ -1,65 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { GetAllJobs, GetJobById } from "../../store/jobSlice";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { GetJobById } from "../../store/jobSlice";
+import JobList from "./JobList";
 import AdCard from "../../templates/AdCard";
-import JobCard from "../../templates/JobCard";
 import conf from "../../conf/conf";
 import { FaWhatsapp, FaTelegramPlane } from "react-icons/fa";
 
 function JobDetails() {
   const { id } = useParams();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-
-  const [jobData, setJobData] = useState(null);
-  const [jobs, setJobs] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const jobsPerPage = 12;
+  const { jobs } = useSelector((state) => state.job);
 
   const whatsappLink = conf.whatsapp_url;
   const telegramLink = conf.telegram_url;
 
   useEffect(() => {
-    const fetchJobDetails = async () => {
-      try {
-        const result = await dispatch(GetJobById(id));
-        if (result.payload?.success) {
-          setJobData(result.payload.data.job || null);
-        } else {
-          setJobData(null);
-        }
-      } catch (e) {
-        console.error("Error fetching details", e);
-        setJobData(null);
-      }
-    };
-    fetchJobDetails();
+    dispatch(GetJobById(id));
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [dispatch, id]);
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      const jobData = await dispatch(GetAllJobs());
-      if (jobData.payload?.success) {
-        setJobs(jobData.payload.data.jobs || []);
-      }
-    };
-    fetchJobs();
-  }, [dispatch]);
-
-  // 🔹 Scroll to top when job ID changes
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]);
-
-  // 🔹 Filter out the current job from "More Jobs"
-  const filteredJobs = jobs.filter((job) => job.id !== id);
-
-  // 🔹 Pagination logic
-  const indexOfLastJob = currentPage * jobsPerPage;
-  const indexOfFirstJob = indexOfLastJob - jobsPerPage;
-  const currentJobs = filteredJobs.slice(indexOfFirstJob, indexOfLastJob);
-  const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
+  const currentJob = useMemo(() => {
+    return jobs.find((job) => String(job.id) === String(id));
+  }, [jobs, id]);
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -78,136 +42,111 @@ function JobDetails() {
         <div className="flex-1">
           <div className="p-8 sm:p-12 bg-gradient-to-r from-indigo-600 to-teal-500 rounded-3xl shadow-xl text-white">
             <h1 className="text-3xl sm:text-5xl font-extrabold text-center mb-10">
-              {jobData ? jobData.title : "No Jobs Found"}
+              {currentJob ? currentJob.title : "No Jobs Found"}
             </h1>
 
-            {jobData ? (
+            {currentJob ? (
               <div className="bg-white text-gray-800 rounded-3xl p-8 sm:p-10 shadow-lg text-left">
                 {/* Job Details */}
                 <div className="space-y-4">
-                  {jobData.company && (
+                  {currentJob.company && (
                     <p>
                       <span className="font-bold text-indigo-700">
                         Company:
                       </span>{" "}
-                      {jobData.company}
+                      {currentJob.company}
                     </p>
                   )}
-                  {(jobData.city || jobData.country) && (
+                  {(currentJob.city || currentJob.country) && (
                     <p>
                       <span className="font-bold text-indigo-700">
                         Location:
                       </span>{" "}
-                      {jobData.city} {jobData.country && `, ${jobData.country}`}
+                      {currentJob.city}{" "}
+                      {currentJob.country && `, ${currentJob.country}`}
                     </p>
                   )}
-                  {jobData.salary && (
+                  {currentJob.salary && (
                     <p>
                       <span className="font-bold text-indigo-700">Salary:</span>{" "}
-                      {jobData.salary}
+                      {currentJob.salary}
                     </p>
                   )}
-                  {jobData.workType && (
+                  {currentJob.workType && (
                     <p>
                       <span className="font-bold text-indigo-700">
                         Work Type:
                       </span>{" "}
-                      {jobData.workType}
+                      {currentJob.workType}
                     </p>
                   )}
-                </div>
-
-                {/* Inline Ad (mobile only) */}
-                <div className="my-8 lg:hidden">
-                  <AdCard
-                    size="medium"
-                    className="rounded-2xl shadow-md bg-gradient-to-r from-indigo-600 to-teal-500 text-white"
-                  />
-                </div>
-
-                {/* First Half */}
-                <div className="mt-8 space-y-5 leading-relaxed text-lg">
-                  {jobData.description && (
+                  {currentJob.description && (
                     <p>
-                      <span className="font-bold text-teal-600">
+                      <span className="font-bold text-indigo-700">
                         Job Description:
                       </span>{" "}
-                      {jobData.description}
+                      {currentJob.description}
                     </p>
                   )}
-                  {jobData.experience && (
+                  {currentJob.experience && (
                     <p>
-                      <span className="font-bold text-teal-600">
+                      <span className="font-bold text-indigo-700">
                         Experience:
                       </span>{" "}
-                      {jobData.experience}
+                      {currentJob.experience}
                     </p>
                   )}
-                  {jobData.degree && (
+                  {currentJob.degree && (
                     <p>
-                      <span className="font-bold text-teal-600">
-                        Qualification:
+                      <span className="font-bold text-indigo-700">
+                        Qualifications:
                       </span>{" "}
-                      {jobData.degree}
+                      {currentJob.degree}
                     </p>
                   )}
-                </div>
-
-                {/* Middle Ad (desktop only) */}
-                <div className="hidden lg:block my-12">
-                  <AdCard
-                    size="banner"
-                    className="rounded-2xl shadow-md h-56 bg-gradient-to-r from-indigo-600 to-teal-500 text-white"
-                  />
-                </div>
-
-                {/* Second Half */}
-                <div className="mt-8 space-y-5 leading-relaxed text-lg">
-                  {jobData.skills && (
+                  {currentJob.skills && (
                     <p>
-                      <span className="font-bold text-teal-600">
+                      <span className="font-bold text-indigo-700">
                         Skills Required:
                       </span>{" "}
-                      {jobData.skills}
+                      {currentJob.skills}
                     </p>
                   )}
-                  {jobData.responsibilities && (
+                  {currentJob.responsibilities && (
                     <p>
-                      <span className="font-bold text-teal-600">
+                      <span className="font-bold text-indigo-700">
                         Responsibilities:
                       </span>{" "}
-                      {jobData.responsibilities}
+                      {currentJob.responsibilities}
                     </p>
                   )}
-                  {jobData.companyDescription && (
+                  {currentJob.companyDescription && (
                     <p>
-                      <span className="font-bold text-teal-600">
+                      <span className="font-bold text-indigo-700">
                         Company Overview:
                       </span>{" "}
-                      {jobData.companyDescription}
+                      {currentJob.companyDescription}
                     </p>
                   )}
-                  {jobData.batch && (
+                  {currentJob.batch && (
                     <p>
-                      <span className="font-bold text-teal-600">Batch:</span>{" "}
-                      {jobData.batch}
+                      <span className="font-bold text-indigo-700">Batch:</span>{" "}
+                      {currentJob.batch}
                     </p>
+                  )}
+                  {currentJob.applyURL && (
+                    <div className="mt-12 text-center">
+                      <a
+                        href={currentJob.applyURL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-bold px-10 py-4 rounded-2xl shadow-lg hover:scale-105 hover:opacity-95 transition"
+                      >
+                        Apply Now
+                      </a>
+                    </div>
                   )}
                 </div>
-
-                {/* Apply Button */}
-                {jobData.applyURL && (
-                  <div className="mt-12 text-center">
-                    <a
-                      href={jobData.applyURL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block bg-gradient-to-r from-indigo-600 to-teal-500 text-white font-bold px-10 py-4 rounded-2xl shadow-lg hover:scale-105 hover:opacity-95 transition"
-                    >
-                      Apply Now
-                    </a>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="bg-white text-gray-800 rounded-3xl p-8 sm:p-10 shadow-lg text-center text-lg">
@@ -262,59 +201,19 @@ function JobDetails() {
         </div>
       </div>
 
-      {/* 🔹 Suggested Jobs with Pagination */}
+      {/* 🔹 Suggested Jobs using JobList */}
       <div className="w-full py-16 px-4 mt-12">
         <div className="max-w-6xl mx-auto">
-          {/* Gradient only on title */}
           <h2 className="inline-block px-6 py-3 rounded-xl text-2xl font-bold text-white mb-8 bg-gradient-to-r from-red-600 to-pink-600 shadow">
             More Jobs
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {currentJobs.map((job, idx) => (
-              <React.Fragment key={idx}>
-                <JobCard
-                  title={job.title}
-                  company={job.company}
-                  batch={job.batch}
-                  buttonLabel="View Details"
-                  onClick={() => navigate(`/job/${job.id}`)}
-                  className="bg-white rounded-xl shadow-md p-4 hover:shadow-xl hover:bg-red-50 transition duration-300 border-l-4 border-red-500"
-                />
-
-                {/* 🔹 Insert square ad after every 3 jobs (only on mobile) */}
-                {(idx + 1) % 3 === 0 && (
-                  <div className="block sm:hidden">
-                    <AdCard
-                      size="square"
-                      className="rounded-xl shadow-md bg-gradient-to-r from-red-500 to-pink-500 text-white"
-                    />
-                  </div>
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-
-          {/* Pagination Controls */}
-          <div className="flex justify-center mt-8 gap-2">
-            <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-              className="px-4 py-2 rounded-md bg-white text-blue-700 font-semibold disabled:opacity-50 shadow"
-            >
-              Prev
-            </button>
-            <span className="px-4 py-2 text-gray-700 font-semibold">{`Page ${currentPage} of ${totalPages}`}</span>
-            <button
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 rounded-md bg-white text-blue-700 font-semibold disabled:opacity-50 shadow"
-            >
-              Next
-            </button>
-          </div>
+          <JobList
+            jobs={jobs}
+            excludeId={id}
+            adFrequency={6}
+            jobsPerPage={18}
+          />
         </div>
       </div>
     </div>

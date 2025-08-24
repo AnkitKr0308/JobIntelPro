@@ -1,70 +1,175 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
+import { GetAllJobs, filterJobs } from "../store/jobSlice";
 import { logoutUser } from "../store/authSlice";
 
 export default function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { countries, cities } = useSelector((state) => state.job);
+  const { user } = useSelector((state) => state.auth);
 
-  // Get logged-in user from Redux
-  const user = useSelector((state) => state.auth.user);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedCountries, setSelectedCountries] = useState([]);
+  const [selectedCities, setSelectedCities] = useState([]);
+
+  const [countryDropdownOpen, setCountryDropdownOpen] = useState(false);
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+
+  const countryRef = useRef(null);
+  const cityRef = useRef(null);
+
+  // fetch all jobs initially
+  useEffect(() => {
+    dispatch(GetAllJobs());
+  }, [dispatch]);
+
+  // filter jobs when filters change
+  useEffect(() => {
+    dispatch(
+      filterJobs({ countries: selectedCountries, cities: selectedCities })
+    );
+  }, [selectedCountries, selectedCities, dispatch]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (isOpen) return; // don't close in mobile menu
+      if (
+        countryRef.current?.contains(e.target) ||
+        cityRef.current?.contains(e.target)
+      ) {
+        return;
+      }
+      setCountryDropdownOpen(false);
+      setCityDropdownOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleLogout = () => {
     dispatch(logoutUser());
     navigate("/");
   };
 
+  const toggleSelection = (value, selected, setSelected) => {
+    if (selected.includes(value)) {
+      setSelected(selected.filter((v) => v !== value));
+    } else {
+      setSelected([...selected, value]);
+    }
+  };
+
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-gradient-to-r from-indigo-600 to-teal-500 shadow-md">
+    <nav className="fixed top-0 w-full z-50 bg-gradient-to-r from-indigo-600 to-teal-500 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between h-16 items-center">
           {/* Logo */}
-          <div
-            className="text-2xl font-bold text-white cursor-pointer"
-            onClick={() => navigate("/")}
-          >
-            JobIntelPro
+          <div className="flex-shrink-0">
+            <Link to="/" className="text-2xl font-bold text-white">
+              JobIntelPro
+            </Link>
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex gap-6 text-white">
-            <Link className="hover:text-yellow-300 transition" to="/countries">
-              Jobs by Countries
-            </Link>
-            <Link className="hover:text-yellow-300 transition" to="/cities">
-              Jobs by Cities
-            </Link>
-            <Link className="hover:text-yellow-300 transition" to="/batch">
+          <div className="hidden md:flex items-center gap-6">
+            {/* Country Filter */}
+            <div className="relative" ref={countryRef}>
+              <button
+                onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm 
+                           focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
+              >
+                🌍 Jobs by Countries
+              </button>
+              {countryDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
+                  {countries.map((country, idx) => (
+                    <label
+                      key={`${country}-${idx}`}
+                      className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCountries.includes(country)}
+                        onChange={() =>
+                          toggleSelection(
+                            country,
+                            selectedCountries,
+                            setSelectedCountries
+                          )
+                        }
+                      />
+                      <span>{country}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* City Filter */}
+            <div className="relative" ref={cityRef}>
+              <button
+                onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+                className="px-3 py-2 rounded-lg bg-white text-gray-700 shadow-sm 
+                           focus:outline-none focus:ring-2 focus:ring-yellow-300 transition"
+              >
+                🏙️ Jobs by Cities
+              </button>
+              {cityDropdownOpen && (
+                <div className="absolute left-0 mt-2 w-48 bg-white shadow-lg rounded-lg p-2 z-50 max-h-48 overflow-y-auto">
+                  {cities.map((city, idx) => (
+                    <label
+                      key={`${city}-${idx}`}
+                      className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedCities.includes(city)}
+                        onChange={() =>
+                          toggleSelection(
+                            city,
+                            selectedCities,
+                            setSelectedCities
+                          )
+                        }
+                      />
+                      <span>{city}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Links */}
+            <Link className="text-white hover:text-yellow-300" to="/batch">
               Batch
             </Link>
-            <Link className="hover:text-yellow-300 transition" to="/degree">
+            <Link className="text-white hover:text-yellow-300" to="/degree">
               Degree
             </Link>
             <Link
-              className="hover:text-yellow-300 transition"
+              className="text-white hover:text-yellow-300"
               to="/internships"
             >
               Internships
             </Link>
           </div>
 
-          {/* Desktop Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          {/* Desktop Auth */}
+          <div className="hidden md:flex gap-4">
             {user ? (
-              <div className="flex items-center gap-2">
-                <span className="text-white font-medium">
-                  Hello, {user.name}
-                </span>
-                <button
-                  onClick={handleLogout}
-                  className="px-4 py-1 border border-white rounded-md text-white hover:bg-white hover:text-indigo-600 transition"
-                >
-                  Logout
-                </button>
-              </div>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-1 border border-white rounded-md text-white hover:bg-white hover:text-indigo-600 transition"
+              >
+                Logout
+              </button>
             ) : (
               <>
                 <button
@@ -84,89 +189,117 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-white"
-            onClick={() => setIsOpen(!isOpen)}
-          >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsOpen(!isOpen)}
+              className="text-white focus:outline-none"
+            >
+              ☰
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* ✅ Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden px-4 pb-4 space-y-2 bg-gradient-to-r from-indigo-600 to-teal-500">
-          <Link
-            className="block text-white hover:text-yellow-300 transition"
-            to="/countries"
-            onClick={() => setIsOpen(false)}
-          >
-            Jobs by Countries
-          </Link>
-          <Link
-            className="block text-white hover:text-yellow-300 transition"
-            to="/cities"
-            onClick={() => setIsOpen(false)}
-          >
-            Jobs by Cities
-          </Link>
-          <Link
-            className="block text-white hover:text-yellow-300 transition"
-            to="/batch"
-            onClick={() => setIsOpen(false)}
-          >
+        <div className="md:hidden bg-indigo-700 px-4 py-3 space-y-3">
+          {/* Filters */}
+          <div>
+            <button
+              onClick={() => setCountryDropdownOpen(!countryDropdownOpen)}
+              className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mb-2"
+            >
+              🌍 Jobs by Countries
+            </button>
+            {countryDropdownOpen && (
+              <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
+                {countries.map((country, idx) => (
+                  <label
+                    key={`${country}-${idx}`}
+                    className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCountries.includes(country)}
+                      onChange={() =>
+                        toggleSelection(
+                          country,
+                          selectedCountries,
+                          setSelectedCountries
+                        )
+                      }
+                    />
+                    <span>{country}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => setCityDropdownOpen(!cityDropdownOpen)}
+              className="w-full text-left px-3 py-2 rounded-lg bg-white text-gray-700 mt-2"
+            >
+              🏙️ Jobs by Cities
+            </button>
+            {cityDropdownOpen && (
+              <div className="bg-white rounded-lg p-2 max-h-48 overflow-y-auto">
+                {cities.map((city, idx) => (
+                  <label
+                    key={`${city}-${idx}`}
+                    className="flex items-center space-x-2 px-2 py-1 hover:bg-gray-100 rounded cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedCities.includes(city)}
+                      onChange={() =>
+                        toggleSelection(city, selectedCities, setSelectedCities)
+                      }
+                    />
+                    <span>{city}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Links */}
+          <Link className="block text-white hover:text-yellow-300" to="/batch">
             Batch
           </Link>
-          <Link
-            className="block text-white hover:text-yellow-300 transition"
-            to="/degree"
-            onClick={() => setIsOpen(false)}
-          >
+          <Link className="block text-white hover:text-yellow-300" to="/degree">
             Degree
           </Link>
           <Link
-            className="block text-white hover:text-yellow-300 transition"
+            className="block text-white hover:text-yellow-300"
             to="/internships"
-            onClick={() => setIsOpen(false)}
           >
             Internships
           </Link>
 
-          {/* Mobile Auth Buttons */}
-          <div className="flex gap-3 mt-2 flex-col">
-            {user ? (
+          {/* Auth */}
+          {user ? (
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600"
+            >
+              Logout
+            </button>
+          ) : (
+            <>
               <button
-                onClick={() => {
-                  handleLogout();
-                  setIsOpen(false);
-                }}
-                className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
+                onClick={() => navigate("/login")}
+                className="w-full px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600"
               >
-                Logout
+                Login
               </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => {
-                    navigate("/login");
-                    setIsOpen(false);
-                  }}
-                  className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
-                >
-                  Login
-                </button>
-                <button
-                  onClick={() => {
-                    navigate("/signup");
-                    setIsOpen(false);
-                  }}
-                  className="px-4 py-1 border border-white rounded-md w-full text-white hover:bg-white hover:text-indigo-600 transition"
-                >
-                  Signup
-                </button>
-              </>
-            )}
-          </div>
+              <button
+                onClick={() => navigate("/signup")}
+                className="w-full px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600"
+              >
+                Signup
+              </button>
+            </>
+          )}
         </div>
       )}
     </nav>
