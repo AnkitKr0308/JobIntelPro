@@ -12,7 +12,6 @@ export const getAuthHeaders = () => {
     : { "Content-Type": "application/json" };
 };
 
-// Helper function to safely parse JSON
 const safeJson = async (response) => {
   try {
     return await response.json();

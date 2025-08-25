@@ -12,7 +12,6 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
   const backendFilteredJobs = useSelector((state) => state.job.filteredJobs);
   const allJobs = useSelector((state) => state.job.jobs);
 
-  // Final list after excludeId filter
   const filteredJobs = excludeId
     ? (backendFilteredJobs ?? allJobs).filter((job) => job.id !== excludeId)
     : backendFilteredJobs ?? allJobs;
@@ -60,12 +59,10 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
 
   return (
     <div>
-      {/* ===== Jobs Grid ===== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-[minmax(0,1fr)]">
         {jobsWithAd}
       </div>
 
-      {/* ===== Pagination Controls ===== */}
       {totalPages > 1 && (
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
@@ -98,7 +95,6 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
         </div>
       )}
 
-      {/* ===== Bottom Banner Ad Above Footer ===== */}
       <div className="mt-12">
         <AdCard
           size="banner"

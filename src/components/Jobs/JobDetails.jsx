@@ -204,7 +204,6 @@ function JobDetails() {
             )}
           </div>
 
-          {/* 🔹 Bottom Ad */}
           <div className="mt-12">
             <AdCard
               size="banner"
@@ -213,7 +212,6 @@ function JobDetails() {
           </div>
         </div>
 
-        {/* 🔹 Floating Right-Side Ad */}
         <div className="hidden lg:block w-80">
           <div className="sticky top-1/3">
             <AdCard

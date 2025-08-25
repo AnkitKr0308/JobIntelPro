@@ -14,7 +14,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
-      {/* 🔹 Fixed Top Banner Ad */}
       <div className="fixed top-[64px] left-0 w-full z-40 bg-gray-50/95 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 py-3">
           <AdCard
@@ -24,15 +23,12 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 🔹 Page Content (pushed down so it doesn’t overlap ad) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto px-6 pt-[160px] mt-[10vh]">
-        {/* Main Content */}
         <div className="lg:col-span-9">
           <h1 className="text-3xl font-bold mb-6">Latest Jobs</h1>
           <JobList jobs={jobs} adFrequency={6} jobsPerPage={90} />
         </div>
 
-        {/* Sidebar Ad */}
         <div className="hidden lg:flex lg:col-span-3 justify-center">
           <div className="sticky top-32 h-[600px] w-full">
             <AdCard

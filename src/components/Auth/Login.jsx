@@ -41,7 +41,7 @@ function Login() {
     const result = await dispatch(loginUser(formData));
 
     if (result.payload?.success) {
-      navigate("/"); // redirect after login
+      navigate("/");
     } else {
       setError(result.payload?.message || "Login failed");
     }

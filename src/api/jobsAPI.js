@@ -3,7 +3,6 @@ import { getAuthHeaders } from "./authAPI.js";
 
 const baseUrl = conf.jobintelpro_base_url;
 
-// ✅ Create job
 export const fetchCreateJob = async (jobData) => {
   try {
     const response = await fetch(`${baseUrl}/jobs/createjob`, {
@@ -29,7 +28,6 @@ export const fetchCreateJob = async (jobData) => {
   }
 };
 
-// ✅ Get all jobs
 export const fetchGetAllJobs = async () => {
   try {
     const response = await fetch(`${baseUrl}/jobs/alljobs`, {
@@ -55,7 +53,6 @@ export const fetchGetAllJobs = async () => {
   }
 };
 
-// ✅ Get job by ID
 export const fetchGetJobById = async (jobId) => {
   try {
     const response = await fetch(`${baseUrl}/jobs/job/${jobId}`, {
@@ -81,7 +78,6 @@ export const fetchGetJobById = async (jobId) => {
   }
 };
 
-// ✅ Get countries
 export const fetchCountries = async () => {
   try {
     const response = await fetch(`${baseUrl}/jobs/countries`, {
@@ -149,8 +145,8 @@ export const fetchSearchJobs = async ({
 }) => {
   try {
     const params = new URLSearchParams();
-    if (query) params.append("query", query); // backend adds %
-    if (countries.length > 0) params.append("country", countries.join(",")); // CSV
+    if (query) params.append("query", query);
+    if (countries.length > 0) params.append("country", countries.join(","));
     if (cities.length > 0) params.append("city", cities.join(","));
 
     const response = await fetch(

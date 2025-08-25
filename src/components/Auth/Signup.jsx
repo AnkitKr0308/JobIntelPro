@@ -83,7 +83,6 @@ function Signup() {
             formData={formData}
           />
 
-          {/* Gender Dropdown */}
           <div className="relative">
             <button
               type="button"
