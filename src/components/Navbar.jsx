@@ -7,7 +7,7 @@ import {
   // filterJobs,
   getAllJobs,
   searchJobs,
-  setFilters,
+  // setFilters,
 } from "../store/jobSlice";
 import { logoutUser } from "../store/authSlice";
 // import { fetchSearchJobs } from "../api/jobsAPI";
@@ -31,7 +31,7 @@ export default function Navbar() {
 
   useEffect(() => {
     dispatch(GetCountries());
-    // dispatch(GetCities());
+    dispatch(getAllJobs());
   }, [dispatch]);
 
   useEffect(() => {
@@ -44,32 +44,23 @@ export default function Navbar() {
   }, [selectedCountries, dispatch]);
 
   useEffect(() => {
-    if (
-      searchValue.trim() === "" &&
-      selectedCountries.length === 0 &&
-      selectedCities.length === 0
-    ) {
-      dispatch(getAllJobs());
-    } else {
-      dispatch(
+    const fetchFilteredJobs = async () => {
+      await dispatch(
         searchJobs({
           query: searchValue,
           countries: selectedCountries,
           cities: selectedCities,
         })
-      );
-    }
+      ).unwrap();
+    };
+
+    fetchFilteredJobs();
+    scrollToMoreJobs();
   }, [searchValue, selectedCountries, selectedCities, dispatch]);
 
-  useEffect(() => {
-    dispatch(
-      setFilters({
-        countries: selectedCountries,
-        cities: selectedCities,
-        search: searchValue,
-      })
-    );
-  }, [selectedCountries, selectedCities, searchValue, dispatch]);
+  const scrollToMoreJobs = () => {
+    window.dispatchEvent(new CustomEvent("scrollToMoreJobs"));
+  };
 
   useEffect(() => {
     function handleClickOutside(e) {

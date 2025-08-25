@@ -7,23 +7,20 @@ import { useSelector } from "react-redux";
 export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
+  const loading = useSelector((state) => state.job.loading);
 
-  // Pull the filtered jobs directly from Redux
-  const jobs = useSelector((state) => state.job.filteredJobs);
+  const backendFilteredJobs = useSelector((state) => state.job.filteredJobs);
   const allJobs = useSelector((state) => state.job.jobs);
-  const jobsToRender = jobs.length > 0 ? jobs : allJobs;
 
-  // Filter out current job if excludeId is provided
+  // Final list after excludeId filter
   const filteredJobs = excludeId
-    ? jobsToRender.filter((job) => job.id !== excludeId)
-    : jobsToRender;
+    ? (backendFilteredJobs ?? allJobs).filter((job) => job.id !== excludeId)
+    : backendFilteredJobs ?? allJobs;
 
-  // Pagination
   const totalPages = Math.ceil(filteredJobs.length / jobsPerPage);
   const startIndex = (currentPage - 1) * jobsPerPage;
   const currentJobs = filteredJobs.slice(startIndex, startIndex + jobsPerPage);
 
-  // Prepare job list with ads
   const jobsWithAd = [];
   currentJobs.forEach((job, idx) => {
     jobsWithAd.push(
@@ -37,7 +34,6 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
       />
     );
 
-    // Insert Ad after every 6 jobs
     if ((idx + 1) % 6 === 0) {
       jobsWithAd.push(
         <div key={`ad-${job.id}-${idx}`} className="col-span-1 w-full">
@@ -49,6 +45,18 @@ export default function JobList({ excludeId = null, jobsPerPage = 90 }) {
       );
     }
   });
+
+  if (loading) {
+    return <p className="text-gray-500 mt-4 text-center">Loading...</p>;
+  }
+
+  if (filteredJobs.length === 0) {
+    return (
+      <p className="text-gray-500 mt-4 text-center">
+        No jobs available for selected filters
+      </p>
+    );
+  }
 
   return (
     <div>

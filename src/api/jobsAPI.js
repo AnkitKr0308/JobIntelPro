@@ -149,9 +149,9 @@ export const fetchSearchJobs = async ({
 }) => {
   try {
     const params = new URLSearchParams();
-    if (query) params.append("query", query);
-    if (countries.length > 0) params.append("countries", countries.join(","));
-    if (cities.length > 0) params.append("cities", cities.join(","));
+    if (query) params.append("query", query); // backend adds %
+    if (countries.length > 0) params.append("country", countries.join(",")); // CSV
+    if (cities.length > 0) params.append("city", cities.join(","));
 
     const response = await fetch(
       `${baseUrl}/jobs/searchjobs?${params.toString()}`,
@@ -166,10 +166,7 @@ export const fetchSearchJobs = async ({
     if (response.ok) {
       return { success: true, jobs: result.jobs || [] };
     } else {
-      return {
-        success: false,
-        message: result.message || "Job search failed",
-      };
+      return { success: false, message: result.message || "Job search failed" };
     }
   } catch (e) {
     console.error("Error searching jobs:", e);

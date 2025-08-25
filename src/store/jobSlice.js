@@ -8,23 +8,11 @@ import {
   fetchSearchJobs,
 } from "../api/jobsAPI";
 
+// Async thunks
 export const CreateJob = createAsyncThunk("job/createJob", async (jobData) => {
   const response = await fetchCreateJob(jobData);
   return response;
 });
-
-export const searchJobs = createAsyncThunk(
-  "jobs/searchJobs",
-  async ({ query = "", countries = [], cities = [] }, { rejectWithValue }) => {
-    try {
-      const result = await fetchSearchJobs({ query, countries, cities });
-      if (result.success) return result.jobs;
-      return rejectWithValue(result.message);
-    } catch (err) {
-      return rejectWithValue(err.message || "Failed to search jobs");
-    }
-  }
-);
 
 export const getAllJobs = createAsyncThunk(
   "jobs/getAllJobs",
@@ -62,58 +50,38 @@ export const GetCities = createAsyncThunk(
   }
 );
 
+export const searchJobs = createAsyncThunk(
+  "job/searchJobs",
+  async ({ query, countries, cities }, { rejectWithValue }) => {
+    try {
+      const result = await fetchSearchJobs({ query, countries, cities });
+      if (result.success) return result.jobs;
+      return rejectWithValue(result.message);
+    } catch (err) {
+      return rejectWithValue(err.message || "Search failed");
+    }
+  }
+);
+
+// Slice
 const jobSlice = createSlice({
   name: "job",
   initialState: {
-    jobs: [],
-    filteredJobs: [],
+    jobs: [], // all jobs from backend
+    filteredJobs: null, // null = no search yet
     loading: false,
     error: null,
     countries: [],
     cities: [],
     data: {},
     status: false,
-    filters: {
-      countries: [],
-      cities: [],
-      search: "",
-    },
   },
   reducers: {
-    setFilters: (state, action) => {
-      state.filters = { ...state.filters, ...action.payload };
-
-      let filtered = [...state.jobs];
-
-      if (state.filters.countries.length > 0) {
-        filtered = filtered.filter((job) =>
-          state.filters.countries.includes(job.country)
-        );
-      }
-
-      if (state.filters.cities.length > 0) {
-        filtered = filtered.filter((job) =>
-          state.filters.cities.includes(job.city)
-        );
-      }
-
-      if (state.filters.search.trim() !== "") {
-        filtered = filtered.filter((job) =>
-          job.title.toLowerCase().includes(state.filters.search.toLowerCase())
-        );
-      }
-
-      state.filteredJobs = filtered;
-    },
-    clearFilters: (state) => {
-      state.filters = { countries: [], cities: [], search: "" };
-      state.filteredJobs = state.jobs;
-    },
+    // No frontend-only filters
   },
-
   extraReducers: (builder) => {
     builder
-      // ✅ Get all jobs
+      // Get all jobs
       .addCase(getAllJobs.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -121,14 +89,14 @@ const jobSlice = createSlice({
       .addCase(getAllJobs.fulfilled, (state, action) => {
         state.loading = false;
         state.jobs = action.payload;
-        state.filteredJobs = action.payload;
+        // Keep filteredJobs null initially
       })
       .addCase(getAllJobs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Fetching jobs failed";
       })
 
-      // ✅ Create job
+      // Create job
       .addCase(CreateJob.pending, (state) => {
         state.loading = true;
       })
@@ -136,7 +104,9 @@ const jobSlice = createSlice({
         state.loading = false;
         if (action.payload?.data) {
           state.jobs.push(action.payload.data);
-          state.filteredJobs.push(action.payload.data);
+          if (state.filteredJobs !== null) {
+            state.filteredJobs.push(action.payload.data);
+          }
         }
       })
       .addCase(CreateJob.rejected, (state, action) => {
@@ -145,7 +115,7 @@ const jobSlice = createSlice({
         state.status = false;
       })
 
-      // ✅ Get job by ID
+      // Get job by ID
       .addCase(GetJobById.pending, (state) => {
         state.loading = true;
       })
@@ -160,7 +130,7 @@ const jobSlice = createSlice({
         state.status = false;
       })
 
-      // ✅ Get countries
+      // Get countries
       .addCase(GetCountries.fulfilled, (state, action) => {
         if (action.payload.success) {
           state.countries = action.payload.countries || [];
@@ -170,7 +140,7 @@ const jobSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // ✅ Get cities
+      // Get cities
       .addCase(GetCities.fulfilled, (state, action) => {
         if (action.payload.success) {
           state.cities = action.payload.cities || [];
@@ -180,22 +150,21 @@ const jobSlice = createSlice({
         state.error = action.error.message;
       })
 
-      // ✅ Search jobs
+      // Search jobs
       .addCase(searchJobs.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(searchJobs.fulfilled, (state, action) => {
         state.loading = false;
-        state.jobs = action.payload;
-        state.filteredJobs = action.payload;
+        state.filteredJobs = action.payload; // backend-driven
       })
       .addCase(searchJobs.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Search failed";
+        state.filteredJobs = []; // empty on failure
       });
   },
 });
 
-export const { setFilters, clearFilters } = jobSlice.actions;
 export default jobSlice.reducer;
