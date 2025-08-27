@@ -194,11 +194,9 @@ export default function Navbar() {
             </div>
 
             <Link className="text-white hover:text-yellow-300" to="/batch">
-              Batch
+              Hackathon
             </Link>
-            <Link className="text-white hover:text-yellow-300" to="/degree">
-              Degree
-            </Link>
+
             <Link
               className="text-white hover:text-yellow-300"
               to="/internships"

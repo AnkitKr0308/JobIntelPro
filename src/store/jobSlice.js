@@ -7,57 +7,112 @@ import {
   fetchGetJobById,
   fetchSearchJobs,
 } from "../api/jobsAPI";
+import { setError, clearError } from "./uiSlice";
 
-export const CreateJob = createAsyncThunk("job/createJob", async (jobData) => {
-  const response = await fetchCreateJob(jobData);
-  return response;
-});
-
-export const getAllJobs = createAsyncThunk(
-  "jobs/getAllJobs",
-  async (_, { rejectWithValue }) => {
+export const CreateJob = createAsyncThunk(
+  "job/createJob",
+  async (jobData, { rejectWithValue, dispatch }) => {
     try {
-      const result = await fetchGetAllJobs();
-      if (result.success) return result.jobs;
-      return rejectWithValue(result.message);
+      const response = await fetchCreateJob(jobData);
+      if (!response.success) {
+        dispatch(setError(response.message || "Job creation failed"));
+        return rejectWithValue(response.message);
+      }
+      dispatch(clearError());
+      return response;
     } catch (err) {
-      return rejectWithValue(err.message || "Failed to fetch jobs");
+      dispatch(setError("Job creation failed."));
+      return rejectWithValue(err.message);
     }
   }
 );
 
-export const GetJobById = createAsyncThunk("job/getJobById", async (jobId) => {
-  const response = await fetchGetJobById(jobId);
-  return response;
-});
+export const getAllJobs = createAsyncThunk(
+  "jobs/getAllJobs",
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const result = await fetchGetAllJobs();
+      if (!result.success) {
+        dispatch(setError(result.message || "Fetching jobs failed"));
+        return rejectWithValue(result.message);
+      }
+      dispatch(clearError());
+      return result.jobs;
+    } catch (err) {
+      dispatch(setError("Fetching jobs failed."));
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
-export const GetCountries = createAsyncThunk("job/getCountries", async () => {
-  const response = await fetchCountries();
-  return response;
-});
+export const GetJobById = createAsyncThunk(
+  "job/getJobById",
+  async (jobId, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await fetchGetJobById(jobId);
+      if (!response.success) {
+        dispatch(setError(response.message || "Job not found"));
+        return rejectWithValue(response.message);
+      }
+      dispatch(clearError());
+      return response;
+    } catch (err) {
+      dispatch(setError("Fetching job failed."));
+      return rejectWithValue(err.message);
+    }
+  }
+);
+
+export const GetCountries = createAsyncThunk(
+  "job/getCountries",
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await fetchCountries();
+      if (!response.success) {
+        dispatch(setError(response.message || "Fetching countries failed"));
+        return rejectWithValue(response.message);
+      }
+      dispatch(clearError());
+      return response;
+    } catch (err) {
+      dispatch(setError("Fetching countries failed."));
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
 export const GetCities = createAsyncThunk(
   "job/getCities",
-  async (countries = [], { rejectWithValue }) => {
+  async (countries = [], { rejectWithValue, dispatch }) => {
     try {
       const response = await fetchCities(countries);
-      if (response.success) return response;
-      return rejectWithValue(response.message);
+      if (!response.success) {
+        dispatch(setError(response.message || "Fetching cities failed"));
+        return rejectWithValue(response.message);
+      }
+      dispatch(clearError());
+      return response;
     } catch (err) {
-      return rejectWithValue(err.message || "Failed to fetch cities");
+      dispatch(setError("Fetching cities failed."));
+      return rejectWithValue(err.message);
     }
   }
 );
 
 export const searchJobs = createAsyncThunk(
   "job/searchJobs",
-  async ({ query, countries, cities }, { rejectWithValue }) => {
+  async ({ query, countries, cities }, { rejectWithValue, dispatch }) => {
     try {
       const result = await fetchSearchJobs({ query, countries, cities });
-      if (result.success) return result.jobs;
-      return rejectWithValue(result.message);
+      if (!result.success) {
+        dispatch(setError(result.message || "Search failed"));
+        return rejectWithValue(result.message);
+      }
+      dispatch(clearError());
+      return result.jobs;
     } catch (err) {
-      return rejectWithValue(err.message || "Search failed");
+      dispatch(setError("Search failed."));
+      return rejectWithValue(err.message);
     }
   }
 );
@@ -68,7 +123,6 @@ const jobSlice = createSlice({
     jobs: [],
     filteredJobs: null,
     loading: false,
-    error: null,
     countries: [],
     cities: [],
     data: {},
@@ -77,23 +131,14 @@ const jobSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-
       .addCase(getAllJobs.pending, (state) => {
         state.loading = true;
-        state.error = null;
       })
       .addCase(getAllJobs.fulfilled, (state, action) => {
         state.loading = false;
         state.jobs = action.payload;
       })
-      .addCase(getAllJobs.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Fetching jobs failed";
-      })
 
-      .addCase(CreateJob.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(CreateJob.fulfilled, (state, action) => {
         state.loading = false;
         if (action.payload?.data) {
@@ -103,56 +148,24 @@ const jobSlice = createSlice({
           }
         }
       })
-      .addCase(CreateJob.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-        state.status = false;
-      })
 
-      .addCase(GetJobById.pending, (state) => {
-        state.loading = true;
-      })
       .addCase(GetJobById.fulfilled, (state, action) => {
         state.loading = false;
         state.data = action.payload.data || {};
         state.status = action.payload.success;
       })
-      .addCase(GetJobById.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message;
-        state.status = false;
-      })
 
       .addCase(GetCountries.fulfilled, (state, action) => {
-        if (action.payload.success) {
-          state.countries = action.payload.countries || [];
-        }
-      })
-      .addCase(GetCountries.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.countries = action.payload.countries || [];
       })
 
       .addCase(GetCities.fulfilled, (state, action) => {
-        if (action.payload.success) {
-          state.cities = action.payload.cities || [];
-        }
-      })
-      .addCase(GetCities.rejected, (state, action) => {
-        state.error = action.error.message;
+        state.cities = action.payload.cities || [];
       })
 
-      .addCase(searchJobs.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(searchJobs.fulfilled, (state, action) => {
         state.loading = false;
         state.filteredJobs = action.payload;
-      })
-      .addCase(searchJobs.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || "Search failed";
-        state.filteredJobs = [];
       });
   },
 });
